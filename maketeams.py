@@ -1,5 +1,7 @@
 import streamlit as st
 import random
+import pandas as pd
+import io
 
 st.title('학생 조 편성 프로그램 🧑‍🤝‍🧑')
 st.write('조별 인원수를 설정해서 조를 편성해 보세요!')
@@ -29,18 +31,41 @@ if st.button('조 편성 시작!'):
         
         st.success('🎉 조 편성이 완료되었습니다!')
         
-        current_index = 0
+        # 조 편성 결과를 저장할 DataFrame 준비
+        teams_data = {'조 이름': [], '조원': []}
         
-        # 조별 인원수와 개수에 따라 조 편성 및 출력
+        current_index = 0
+        team_count = 1
+        
+        # 조별 인원수와 개수에 따라 조 편성
         for size, count in sorted(num_teams_by_size.items()):
             for i in range(count):
                 team_members = student_list[current_index:current_index + size]
                 
-                # 조 제목 출력
-                st.write(f'**{size}명인 조 ({i + 1}):**')
+                # 데이터프레임에 추가
+                teams_data['조 이름'].append(f'{size}명인 조 ({team_count})')
+                teams_data['조원'].append(', '.join(map(str, team_members)))
                 
-                # 학생 번호 리스트를 문자열로 변환하고 폰트 크기 키우기
+                # 화면에 결과 출력
+                st.write(f'**{size}명인 조 ({team_count}):**')
                 members_str = ' '.join(map(str, team_members))
                 st.markdown(f"### {members_str}")
-
+                
                 current_index += size
+                team_count += 1
+
+        # 조 편성 결과를 DataFrame으로 변환
+        df_teams = pd.DataFrame(teams_data)
+        
+        # DataFrame을 Excel 파일(바이트)로 변환
+        excel_buffer = io.BytesIO()
+        df_teams.to_excel(excel_buffer, index=False, engine='openpyxl')
+        excel_buffer.seek(0)
+        
+        # 다운로드 버튼 생성
+        st.download_button(
+            label="엑셀 파일로 다운로드하기",
+            data=excel_buffer,
+            file_name="학생_조_편성.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
