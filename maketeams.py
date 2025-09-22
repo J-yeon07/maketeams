@@ -33,7 +33,14 @@ if st.button('조 편성 시작!'):
         
         # 조별 인원수와 개수에 따라 조 편성 및 출력
         for size, count in sorted(num_teams_by_size.items()):
-            for _ in range(count):
+            for i in range(count):
                 team_members = student_list[current_index:current_index + size]
-                st.write(f'**{size}명인 조:**', team_members)
+                
+                # 조 제목 출력
+                st.write(f'**{size}명인 조 ({i + 1}):**')
+                
+                # 학생 번호 리스트를 문자열로 변환하고 폰트 크기 키우기
+                members_str = ' '.join(map(str, team_members))
+                st.markdown(f"### {members_str}")
+
                 current_index += size
